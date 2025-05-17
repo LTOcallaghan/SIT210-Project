@@ -10,8 +10,8 @@ load_dotenv()
 
 # MQTT config from .env
 broker = os.getenv('MQTT_BROKER')
-port = int(os.getenv('MQTT_PORT', 8883))
-topic = os.getenv('MQTT_TOPIC', 'sensor/servo')
+port = 8883
+topic = 'sensor/servo'
 username = os.getenv('MQTT_USERNAME')
 password = os.getenv('MQTT_PASSWORD')
 
@@ -45,21 +45,24 @@ def on_message(client, userdata, msg):
         print("1 hour has passed, reopening blinds")
         reset_servo()
         cooldown_until = 0
-        
-    # if on cooldown (keeping blinds closed for 1h)
-    if now < cooldown_until:
-        print(f"No new messages being processed until 1 hour passes")
-        return
-
-    if message == "true":
-        print("Servo activated and closing blinds for an hour")
-        move_servo()
-        cooldown_until = now + 10 # 3600 is 1 hour
-    elif message == "false":
-        print("Message ignored, brightness level too low")
+        print("")
     else:
-        print("Message ignored, waiting for an hour")
-    
+        # if on cooldown (keeping blinds closed for 1h)
+        if now < cooldown_until:
+            print(f"No new messages being processed until 1 hour passes")
+            print("")
+        else: 
+        # if it is not on cooldown, and the blinds are open, if true message: close the blinds and set cooldown for an hour (no messages processed for an hour). 
+        # If false message: do nothing
+                
+            if message == "true":
+                print("Servo activated and closing blinds for an hour")
+                move_servo()
+                cooldown_until = now + 10 # 3600 is 1 hour, set to 10s for testing
+                print("")
+            elif message == "false":
+                print("Message ignored, brightness level too low")
+                print("")
 
 
 def move_servo():
