@@ -20,8 +20,8 @@ const char* MQTT_PASSWORD = SECRET_MQTT_PASSWORD;
 WiFiSSLClient wifiSSLClient;
 PubSubClient mqttClient(wifiSSLClient);
 
-// BH1750 sensor instance
-BH1750 lightSensor;
+// BH1750 sensor instance, 0x5C is the I2C address of the sensor
+BH1750 lightMeter(0x5C);
 
 // Function to Connect to MQTT Broker
 void connectMQTT() {
@@ -40,11 +40,12 @@ void connectMQTT() {
 
 
 void setup() {
-   Serial.begin(115200);
-    Wire.begin();
+    Serial.begin(115200);
+    Wire.begin(A4, A5); // Which points are being used for SDA, SCL
+    Wire.setClock(100000);
 
     // initialize the light detector, as it wasn't working without it
-    if (lightSensor.begin(BH1750::CONTINUOUS_HIGH_RES_MODE)) {
+    if (lightMeter.begin(BH1750::CONTINUOUS_HIGH_RES_MODE)) {
       Serial.println("BH1750 initialized.");
     } else {
       Serial.println("Error initializing BH1750.");
@@ -74,7 +75,7 @@ void loop() {
   mqttClient.loop();
   
     // get the data
-    float lux = lightSensor.readLightLevel();
+    float lux = lightMeter.readLightLevel();
 
     // print in serial monitor for easier testing
     Serial.print(lux);
